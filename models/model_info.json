@@ -1,0 +1,42 @@
+{
+    "model_name": "Random Forest Classifier",
+    "training_date": "2025-12-28 16:19:40",
+    "metrics": {
+        "accuracy": 0.9321766561514195,
+        "precision": 0.9373159491324582,
+        "recall": 0.9321766561514195,
+        "f1_score": 0.9335833959302765,
+        "roc_auc": 0.9969793460268535
+    },
+    "features": {
+        "numeric": [
+            "age",
+            "bmi"
+        ],
+        "binary": [
+            "gender",
+            "smoker",
+            "frequent_high_caloric_food",
+            "calorie_monitoring",
+            "family_history_overweight"
+        ],
+        "categorical": [
+            "main_meals_per_day",
+            "vegetable_consumption_freq",
+            "water_intake",
+            "physical_activity_freq",
+            "technology_use_time",
+            "food_between_meals",
+            "alcohol_consumption",
+            "transportation_mode"
+        ]
+    },
+    "hyperparameters": {
+        "n_estimators": 300,
+        "max_depth": 15,
+        "min_samples_split": 5,
+        "min_samples_leaf": 2,
+        "class_weight": "balanced",
+        "random_state": 42
+    }
+}
