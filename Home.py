@@ -124,4 +124,4 @@ st.info("""
 
 # Rodapé
 st.divider()
-st.caption("Sistema desenvolvido com Streamlit • Tech Challenge Fase 4 • 2024")
+st.caption("Sistema desenvolvido com Streamlit • Tech Challenge Fase 4 • 2025")
