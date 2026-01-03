@@ -464,10 +464,7 @@ def main():
                 yanchor="top",
                 y=0.98,
                 xanchor="left",
-                x=1.02,
-                bgcolor='rgba(255,255,255,0.8)',
-                bordercolor='rgba(0,0,0,0.2)',
-                borderwidth=1
+                x=1.02
             )
         )
         
