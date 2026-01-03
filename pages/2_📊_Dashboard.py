@@ -179,50 +179,301 @@ def main():
     col1, col2 = st.columns(2)
     
     with col1:
-        # Consumo de vegetais vs Obesidade
-        fig_fcvc = px.box(
-            df_filtered,
-            x='obesity_level',
-            y='vegetable_consumption_freq',
-            title='Consumo de Vegetais por Nível de Obesidade',
-            color='obesity_level'
+        # Heatmap de hábitos alimentares
+        st.subheader("Padrões de Hábitos Alimentares")
+        
+        # Criar matriz de contagem para hábitos alimentares
+        food_habits = ['vegetable_consumption_freq', 'water_intake', 'main_meals_per_day', 'food_between_meals']
+        food_matrix = []
+        food_labels = []
+        
+        for habit in food_habits:
+            habit_dist = pd.crosstab(
+                df_filtered['obesity_level'], 
+                df_filtered[habit], 
+                normalize='index'
+            ) * 100
+            
+            # Obter categorias ordenadas
+            if habit == 'vegetable_consumption_freq':
+                categories = ['rarely', 'sometimes', 'always']
+                label_prefix = 'Vegetais'
+            elif habit == 'water_intake':
+                categories = ['low_consumption', 'adequate_consumption', 'high_consumption']
+                label_prefix = 'Água'
+            elif habit == 'main_meals_per_day':
+                categories = ['one_meal', 'two_meals', 'three_meals', 'four_or_more_meals']
+                label_prefix = 'Refeições'
+            else:
+                categories = df_filtered[habit].unique()
+                label_prefix = 'Lanches'
+            
+            for cat in categories:
+                if cat in habit_dist.columns:
+                    food_matrix.append(habit_dist[cat].values)
+                    food_labels.append(f"{label_prefix}: {cat.replace('_', ' ').title()}")
+        
+        fig_food = go.Figure(data=go.Heatmap(
+            z=food_matrix,
+            x=habit_dist.index,
+            y=food_labels,
+            colorscale='RdYlGn',
+            text=np.round(food_matrix, 1),
+            texttemplate='%{text}%',
+            textfont={"size": 9},
+            colorbar=dict(title="% Pessoas")
+        ))
+        
+        fig_food.update_layout(
+            title='Distribuição de Hábitos Alimentares por Nível de Obesidade',
+            xaxis_title='Nível de Obesidade',
+            yaxis_title='Comportamento Alimentar',
+            xaxis_tickangle=-45,
+            height=500
         )
-        fig_fcvc.update_layout(showlegend=False, xaxis_tickangle=-45)
-        st.plotly_chart(fig_fcvc, use_container_width=True)
+        st.plotly_chart(fig_food, use_container_width=True)
     
     with col2:
-        # Atividade física vs Obesidade
-        fig_faf = px.box(
-            df_filtered,
-            x='obesity_level',
-            y='physical_activity_freq',
-            title='Frequência de Atividade Física por Nível de Obesidade',
-            color='obesity_level'
+        # Heatmap de estilo de vida
+        st.subheader("Padrões de Estilo de Vida")
+        
+        # Criar matriz de contagem para estilo de vida
+        lifestyle_habits = ['physical_activity_freq', 'technology_use_time', 'transportation_mode', 'frequent_high_caloric_food']
+        lifestyle_matrix = []
+        lifestyle_labels = []
+        
+        for habit in lifestyle_habits:
+            habit_dist = pd.crosstab(
+                df_filtered['obesity_level'], 
+                df_filtered[habit], 
+                normalize='index'
+            ) * 100
+            
+            # Obter categorias ordenadas
+            if habit == 'physical_activity_freq':
+                categories = ['sedentary', 'low_frequency', 'moderate_frequency', 'high_frequency']
+                label_prefix = 'Atividade Física'
+            elif habit == 'technology_use_time':
+                categories = ['low_use', 'moderate_use', 'high_use']
+                label_prefix = 'Tempo de Tela'
+            elif habit == 'frequent_high_caloric_food':
+                categories = [0, 1]
+                label_prefix = 'Alimentos Calóricos'
+            else:
+                categories = df_filtered[habit].unique()
+                label_prefix = 'Transporte'
+            
+            for cat in categories:
+                if cat in habit_dist.columns:
+                    lifestyle_matrix.append(habit_dist[cat].values)
+                    if habit == 'frequent_high_caloric_food':
+                        cat_label = 'Não' if cat == 0 else 'Sim'
+                    else:
+                        cat_label = str(cat).replace('_', ' ').title()
+                    lifestyle_labels.append(f"{label_prefix}: {cat_label}")
+        
+        fig_lifestyle = go.Figure(data=go.Heatmap(
+            z=lifestyle_matrix,
+            x=habit_dist.index,
+            y=lifestyle_labels,
+            colorscale='RdYlGn_r',
+            text=np.round(lifestyle_matrix, 1),
+            texttemplate='%{text}%',
+            textfont={"size": 9},
+            colorbar=dict(title="% Pessoas")
+        ))
+        
+        fig_lifestyle.update_layout(
+            title='Distribuição de Hábitos de Estilo de Vida por Nível de Obesidade',
+            xaxis_title='Nível de Obesidade',
+            yaxis_title='Comportamento',
+            xaxis_tickangle=-45,
+            height=500
         )
-        fig_faf.update_layout(showlegend=False, xaxis_tickangle=-45)
-        st.plotly_chart(fig_faf, use_container_width=True)
+        st.plotly_chart(fig_lifestyle, use_container_width=True)
     
     st.divider()
     
-    # Correlações
-    st.header("🔗 Análise de Correlações")
+    # Análise de Fatores de Risco
+    st.header("🔗 Análise de Fatores de Risco Combinados")
     
-    # Selecionar apenas colunas numéricas
-    numeric_cols = ['age', 'height', 'weight', 'bmi']
-    correlation_matrix = df_filtered[numeric_cols].corr()
+    col1, col2 = st.columns(2)
     
-    fig_corr = px.imshow(
-        correlation_matrix,
-        title='Matriz de Correlação entre Variáveis Numéricas',
-        color_continuous_scale='RdBu_r',
-        aspect='auto',
-        labels=dict(color='Correlação')
-    )
-    fig_corr.update_layout(
-        xaxis_title='',
-        yaxis_title=''
-    )
-    st.plotly_chart(fig_corr, use_container_width=True)
+    with col1:
+        st.subheader("Impacto de Fatores Combinados")
+        
+        # Criar combinações de fatores de risco
+        risk_combinations = []
+        obesity_rates = []
+        
+        # Cenário 1: Histórico familiar + Sedentarismo
+        scenario_1 = df_filtered[
+            (df_filtered['family_history_overweight'] == 1) & 
+            (df_filtered['physical_activity_freq'] == 'sedentary')
+        ]
+        if len(scenario_1) > 0:
+            obesity_rate_1 = (scenario_1['obesity_level'].isin(['Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III']).sum() / len(scenario_1)) * 100
+            risk_combinations.append('Histórico Familiar +\nSedentarismo')
+            obesity_rates.append(obesity_rate_1)
+        
+        # Cenário 2: Sem histórico + Atividade regular
+        scenario_2 = df_filtered[
+            (df_filtered['family_history_overweight'] == 0) & 
+            (df_filtered['physical_activity_freq'].isin(['moderate_frequency', 'high_frequency']))
+        ]
+        if len(scenario_2) > 0:
+            obesity_rate_2 = (scenario_2['obesity_level'].isin(['Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III']).sum() / len(scenario_2)) * 100
+            risk_combinations.append('Sem Histórico +\nAtividade Regular')
+            obesity_rates.append(obesity_rate_2)
+        
+        # Cenário 3: Alimentos calóricos + Sedentarismo
+        scenario_3 = df_filtered[
+            (df_filtered['frequent_high_caloric_food'] == 1) & 
+            (df_filtered['physical_activity_freq'] == 'sedentary')
+        ]
+        if len(scenario_3) > 0:
+            obesity_rate_3 = (scenario_3['obesity_level'].isin(['Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III']).sum() / len(scenario_3)) * 100
+            risk_combinations.append('Alimentos Calóricos +\nSedentarismo')
+            obesity_rates.append(obesity_rate_3)
+        
+        # Cenário 4: Vegetais raros + Baixa água
+        scenario_4 = df_filtered[
+            (df_filtered['vegetable_consumption_freq'] == 'rarely') & 
+            (df_filtered['water_intake'] == 'low_consumption')
+        ]
+        if len(scenario_4) > 0:
+            obesity_rate_4 = (scenario_4['obesity_level'].isin(['Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III']).sum() / len(scenario_4)) * 100
+            risk_combinations.append('Poucos Vegetais +\nPouca Água')
+            obesity_rates.append(obesity_rate_4)
+        
+        # Cenário 5: Múltiplos fatores protetores
+        scenario_5 = df_filtered[
+            (df_filtered['physical_activity_freq'].isin(['moderate_frequency', 'high_frequency'])) & 
+            (df_filtered['vegetable_consumption_freq'].isin(['sometimes', 'always'])) &
+            (df_filtered['water_intake'].isin(['adequate_consumption', 'high_consumption']))
+        ]
+        if len(scenario_5) > 0:
+            obesity_rate_5 = (scenario_5['obesity_level'].isin(['Obesity_Type_I', 'Obesity_Type_II', 'Obesity_Type_III']).sum() / len(scenario_5)) * 100
+            risk_combinations.append('Múltiplos Fatores\nProtetores')
+            obesity_rates.append(obesity_rate_5)
+        
+        # Criar gráfico de barras
+        fig_risk = go.Figure(data=[
+            go.Bar(
+                y=risk_combinations,
+                x=obesity_rates,
+                orientation='h',
+                marker=dict(
+                    color=obesity_rates,
+                    colorscale='RdYlGn_r',
+                    showscale=True,
+                    colorbar=dict(title="% Obesidade")
+                ),
+                text=[f'{rate:.1f}%' for rate in obesity_rates],
+                textposition='outside'
+            )
+        ])
+        
+        fig_risk.update_layout(
+            title='Taxa de Obesidade por Combinação de Fatores',
+            xaxis_title='% Pessoas com Obesidade',
+            yaxis_title='Combinação de Fatores',
+            height=500,
+            showlegend=False
+        )
+        st.plotly_chart(fig_risk, use_container_width=True)
+    
+    with col2:
+        st.subheader("Relação IMC, Idade e Atividade Física")
+        
+        # Criar scatter plot IMC vs Idade colorido por atividade física
+        df_scatter = df_filtered.copy()
+        
+        # Adicionar pequeno jitter para melhor visualização (evita sobreposição exata)
+        np.random.seed(42)
+        df_scatter['age_jitter'] = df_scatter['age'] + np.random.uniform(-0.3, 0.3, len(df_scatter))
+        df_scatter['bmi_jitter'] = df_scatter['bmi'] + np.random.uniform(-0.2, 0.2, len(df_scatter))
+        
+        # Criar label para alimentos calóricos (para hover)
+        df_scatter['caloric_label'] = df_scatter['frequent_high_caloric_food'].map({
+            0: 'Não',
+            1: 'Sim'
+        })
+        
+        # Criar label para consumo de vegetais
+        df_scatter['veg_label'] = df_scatter['vegetable_consumption_freq'].map({
+            'rarely': 'Raramente',
+            'sometimes': 'Às vezes',
+            'always': 'Sempre'
+        })
+        
+        fig_scatter = px.scatter(
+            df_scatter,
+            x='age_jitter',
+            y='bmi_jitter',
+            color='physical_activity_freq',
+            color_discrete_map={
+                'sedentary': '#d62728',
+                'low_frequency': '#ff7f0e',
+                'moderate_frequency': '#2ca02c',
+                'high_frequency': '#1f77b4'
+            },
+            category_orders={
+                'physical_activity_freq': ['sedentary', 'low_frequency', 'moderate_frequency', 'high_frequency']
+            },
+            labels={
+                'age_jitter': 'Idade (anos)',
+                'bmi_jitter': 'IMC',
+                'physical_activity_freq': 'Atividade Física'
+            },
+            title='Distribuição de IMC por Idade e Atividade Física',
+            hover_data={
+                'age': True,
+                'bmi': True,
+                'obesity_level': True,
+                'veg_label': ':.0s',
+                'caloric_label': ':.0s',
+                'age_jitter': False,
+                'bmi_jitter': False,
+                'physical_activity_freq': False
+            },
+            custom_data=['obesity_level', 'veg_label', 'caloric_label']
+        )
+        
+        # Customizar hover template
+        fig_scatter.update_traces(
+            hovertemplate='<b>Idade:</b> %{customdata[0]}<br>' +
+                          '<b>IMC:</b> %{customdata[1]}<br>' +
+                          '<b>Nível Obesidade:</b> %{customdata[2]}<br>' +
+                          '<b>Vegetais:</b> %{customdata[3]}<br>' +
+                          '<b>Alim. Calóricos:</b> %{customdata[4]}<extra></extra>',
+            marker=dict(
+                size=7,
+                opacity=0.35,
+                line=dict(width=0, color='rgba(0,0,0,0)')
+            )
+        )
+        
+        fig_scatter.update_layout(
+            height=500,
+            xaxis_title='Idade (anos)',
+            yaxis_title='IMC',
+            legend=dict(
+                title=dict(text="Atividade Física", font=dict(size=11)),
+                orientation="v",
+                yanchor="top",
+                y=0.98,
+                xanchor="left",
+                x=1.02,
+                bgcolor='rgba(255,255,255,0.8)',
+                bordercolor='rgba(0,0,0,0.2)',
+                borderwidth=1
+            )
+        )
+        
+        st.plotly_chart(fig_scatter, use_container_width=True)
+        
+        st.caption("💡 **Dica:** Cores mais intensas = maior concentração. Passe o mouse sobre os pontos para ver detalhes individuais.")
     
     st.divider()
     
