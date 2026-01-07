@@ -428,25 +428,25 @@ def main():
             },
             title='Distribuição de IMC por Idade e Atividade Física',
             hover_data={
-                'age': True,
-                'bmi': True,
-                'obesity_level': True,
-                'veg_label': ':.0s',
-                'caloric_label': ':.0s',
                 'age_jitter': False,
                 'bmi_jitter': False,
-                'physical_activity_freq': False
+                'physical_activity_freq': False,
+                'obesity_level': False,
+                'veg_label': False,
+                'caloric_label': False,
+                'age': False,
+                'bmi': False
             },
-            custom_data=['obesity_level', 'veg_label', 'caloric_label']
+            custom_data=['obesity_level', 'veg_label', 'caloric_label', 'age', 'bmi']
         )
         
         # Customizar hover template
         fig_scatter.update_traces(
-            hovertemplate='<b>Idade:</b> %{customdata[0]}<br>' +
-                          '<b>IMC:</b> %{customdata[1]}<br>' +
-                          '<b>Nível Obesidade:</b> %{customdata[2]}<br>' +
-                          '<b>Vegetais:</b> %{customdata[3]}<br>' +
-                          '<b>Alim. Calóricos:</b> %{customdata[4]}<extra></extra>',
+            hovertemplate='<b>Nível Obesidade:</b> %{customdata[0]}<br>' +
+                          '<b>Vegetais:</b> %{customdata[1]}<br>' +
+                          '<b>Alim. Calóricos:</b> %{customdata[2]}<br>' +
+                          '<b>Idade:</b> %{customdata[3]}<br>' +
+                          '<b>IMC:</b> %{customdata[4]:.2f}<extra></extra>',
             marker=dict(
                 size=7,
                 opacity=0.35,
