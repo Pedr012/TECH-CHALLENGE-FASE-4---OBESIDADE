@@ -533,7 +533,7 @@ def main():
     st.divider()
     
     # Rodapé
-    st.caption("Dashboard desenvolvido com Streamlit e Plotly • Tech Challenge Fase 4 • 2024")
+    st.caption("Dashboard desenvolvido com Streamlit • Tech Challenge Fase 4 • 2025")
 
 if __name__ == "__main__":
     main()
