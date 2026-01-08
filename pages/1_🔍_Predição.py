@@ -217,24 +217,16 @@ def main():
             prediction = model.predict(input_df)[0]
             probabilities = model.predict_proba(input_df)[0]
             
-            # Obter nome da classe predita
-            class_labels = [
-                'Insufficient_Weight',
-                'Normal_Weight',
-                'Overweight_Level_I',
-                'Overweight_Level_II',
-                'Obesity_Type_I',
-                'Obesity_Type_II',
-                'Obesity_Type_III'
-            ]
+            # Usar as classes na ordem do modelo
+            class_labels = list(model.classes_)
             
-            # Se prediction já é uma string, usar direto; senão, pegar do array
+            # Usar o retorno direto do modelo
             if isinstance(prediction, str):
                 predicted_class = prediction
-                # Encontrar o índice
-                prediction = class_labels.index(prediction)
+                predicted_index = class_labels.index(prediction)
             else:
-                predicted_class = class_labels[int(prediction)]
+                predicted_index = int(prediction)
+                predicted_class = class_labels[predicted_index]
             
             st.divider()
             
@@ -242,10 +234,10 @@ def main():
             st.header("📊 Resultado da Predição")
             
             # Definir cor baseado na classe
-            if prediction <= 1:
+            if predicted_index <= 1:
                 result_type = "success"
                 icon = "✅"
-            elif prediction <= 3:
+            elif predicted_index <= 3:
                 result_type = "warning"
                 icon = "⚠️"
             else:
@@ -283,14 +275,14 @@ def main():
             # Recomendações
             st.subheader("💡 Recomendações")
             
-            if prediction <= 1:
+            if predicted_index <= 1:
                 st.success("""
                 **Parabéns!** Você está na faixa de peso saudável.
                 - Continue mantendo seus hábitos alimentares equilibrados
                 - Mantenha a prática regular de atividades físicas
                 - Faça check-ups médicos periódicos
                 """)
-            elif prediction <= 3:
+            elif predicted_index <= 3:
                 st.warning("""
                 **Atenção!** Você está na faixa de sobrepeso.
                 - Consulte um nutricionista para orientação alimentar
